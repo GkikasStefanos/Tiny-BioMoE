@@ -8,12 +8,10 @@ a Lightweight Embedding Model for Biosignal Analysis
 
 ## Highlights
 
-| Feature          | Description                                                                    |
-|------------------|--------------------------------------------------------------------------------|
-| **Compact**      | <8 M parameters – runs comfortably on a laptop GPU / modern CPU                |
-| **Cross‑domain** | Robust across ECG, EMG, and EEG modalities – trained on 4.4 M representations  |
-
-
+| Feature          | Description                                                                 |
+| ---------------- | --------------------------------------------------------------------------- |
+| **Compact**      | <8 M parameters – runs comfortably on a laptop GPU / modern CPU             |
+| **Cross‑domain** | Pre‑trained on 4.4 M ECG, EMG & EEG representations via multi‑task learning |
 
 <br/>
 
@@ -74,61 +72,89 @@ model_state_dict    # MoE backbone weights (SpectFormer‑T‑w + EfficientViT�
 ### Extract embeddings
 
 ```python
-import torch
+import torch, torch.nn as nn
 from PIL import Image
 from torchvision import transforms
-import architectures.spectformer   # registers SpectFormer‑T‑w
-import architectures.efficientvit  # registers EfficientViT‑w
+import architectures.spectformer, architectures.efficientvit
 from timm.models import create_model
 
-# ------------------------------------------------------------------
-# Build backbone ----------------------------------------------------
-# ------------------------------------------------------------------
-class MoE(torch.nn.Module):
-    def __init__(self):
+# ---------------------------------------------------------------
+# Setup ----------------------------------------------------------
+# ---------------------------------------------------------------
+emb_size, num_experts = 96, 2
+final_emb_size = emb_size * num_experts  # 192‑D
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f"running on {device}")
+
+# ---------------------------------------------------------------
+# Backbone -------------------------------------------------------
+# ---------------------------------------------------------------
+class MoE(nn.Module):
+    def __init__(self, enc1, enc2):
         super().__init__()
-        m1 = create_model('spectformer_t_w'); m1.head = torch.nn.Identity()
-        m2 = create_model('EfficientViT_w');  m2.head = torch.nn.Identity()
-        self.m1, self.m2 = m1, m2
+        self.enc1, self.enc2 = enc1, enc2
+        self.ln_img = nn.LayerNorm((3, 224, 224))
+        self.ln_e   = nn.LayerNorm(emb_size)
+        self.ln_out = nn.LayerNorm(final_emb_size)
+        self.fcn = nn.Sequential(nn.ELU(), nn.Linear(emb_size, emb_size),
+                                 nn.Hardtanh(0, 1))
+    @torch.no_grad()
     def forward(self, x):
-        z1 = self.m1(x)[0]  # 96‑D
-        z2 = self.m2(x)     # 96‑D
-        return torch.cat((z1, z2), 1)  # 192‑D
+        x = self.ln_img(x)
+        z1, *_ = self.enc1(x)
+        z2 = self.enc2(x)
+        z1 = self.ln_e(z1) * self.fcn(z1)
+        z2 = self.ln_e(z2) * self.fcn(z2)
+        return self.ln_out(torch.cat((z1, z2), 1))
 
-ckpt  = torch.load('Tiny-BioMoE.pth', map_location='cpu')
-model = MoE(); model.load_state_dict(ckpt['model_state_dict']); model.eval()
+enc1 = create_model('spectformer_t_w'); enc1.head = nn.Identity()
+enc2 = create_model('EfficientViT_w');  enc2.head = nn.Identity()
+backbone = MoE(enc1, enc2).to(device).eval()
+backbone.load_state_dict(torch.load('Tiny-BioMoE.pth', map_location=device)['model_state_dict'])
 
-tr   = transforms.Compose([transforms.Resize((224,224)), transforms.ToTensor()])
-img  = tr(Image.open('img.png').convert('RGB')).unsqueeze(0)
-feat = model(img).squeeze().numpy()
-print(feat.shape)  # (192,)
+# ---------------------------------------------------------------
+# One image → embedding -----------------------------------------
+# ---------------------------------------------------------------
+tr  = transforms.Compose([transforms.Resize((224,224)), transforms.ToTensor()])
+img = Image.open('img.png').convert('RGB')
+img = tr(img).unsqueeze(0).to(device)        # → tensor [1, 3, 224, 224]
+feat = backbone(img).squeeze().cpu().numpy()  # 192‑D vector
+print(feat[:8])
 ```
 
 ---
 
 ## Fine‑tuning
 
-Integrate the backbone into any training loop:
+Add your own classification/regression head and (optionally) un‑freeze the backbone:
 
 ```python
 import torch, torch.nn as nn
-from timm.models import create_model
 import architectures.spectformer, architectures.efficientvit
+from timm.models import create_model
+
+# ---------------------------------------------------------------
+# Setup ----------------------------------------------------------
+# ---------------------------------------------------------------
+emb_size, num_experts = 96, 2
+final_emb_size = emb_size * num_experts  # 192‑D
 
 class MoE(nn.Module):
-    # same as above
+    # identical to the class in Quick‑start
     ...
 
-backbone = MoE().to('cuda')
-ckpt = torch.load('Tiny-BioMoE.pth', map_location='cpu')
-backbone.load_state_dict(ckpt['model_state_dict'])
+enc1 = create_model('spectformer_t_w'); enc1.head = nn.Identity()
+enc2 = create_model('EfficientViT_w');  enc2.head = nn.Identity()
+backbone = MoE(enc1, enc2).to('cuda')
+backbone.load_state_dict(torch.load('Tiny-BioMoE.pth', map_location='cpu')['model_state_dict'])
 
-# freeze or unfreeze
+# freeze if you only need fixed embeddings
 for p in backbone.parameters():
-    p.requires_grad = False  # set True for full fine‑tuning
+    p.requires_grad = False
 
-head = nn.Sequential(nn.ELU(), nn.Linear(192, num_classes)).to('cuda')
-optimizer = torch.optim.Adam(list(head.parameters()) + list(backbone.parameters()), lr=1e‑3)
+head = nn.Sequential(nn.ELU(), nn.Linear(final_emb_size, num_classes)).to('cuda')
+optimizer = torch.optim.Adam(head.parameters(), lr=1e‑3)
 ```
 
 ---
@@ -150,10 +176,8 @@ optimizer = torch.optim.Adam(list(head.parameters()) + list(backbone.parameters(
 ## Licence & acknowledgements
 
 * Code & weights: **MIT Licence** – see [`LICENSE`](./LICENSE)
-* Built on open‑sourced **SpectFormer** and **EfficientViT**
-
 ---
 
 ### Contact
 
-For issues or questions, open a GitHub issue or email **Stefanos Gkikas** ([gkikas@ics.forth.gr](mailto:gkikas@ics.forth.gr)).
+Open an issue or email **Stefanos Gkikas** ([gkikas@ics.forth.gr](mailto:gkikas@ics.forth.gr)).
