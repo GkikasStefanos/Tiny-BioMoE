@@ -1,9 +1,3 @@
-# --------------------------------------------------------
-# EfficientViT Model Architecture
-# Copyright (c) 2022 Microsoft
-# Build the EfficientViT Model
-# Written by: Xinyu Liu
-# --------------------------------------------------------
 import torch
 import itertools
 
