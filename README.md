@@ -11,7 +11,7 @@ a Lightweight Embedding Model for Biosignal Analysis
 | Feature          | Description                                                                 |
 | ---------------- | --------------------------------------------------------------------------- |
 | **Compact**      | <8 M parameters – runs comfortably on a laptop GPU / modern CPU             |
-| **Cross‑domain** | Pre‑trained on 4.4 M ECG, EMG & EEG representations via multi‑task learning |
+| **Cross‑domain** | Pre‑trained on **4.4 M** ECG, EMG & EEG representations via multi‑task learning |
 
 <br/>
 
