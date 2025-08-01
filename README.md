@@ -181,4 +181,4 @@ primaryClass={cs.AI}
 
 ### Contact
 
-Open an issue or email **Stefanos Gkikas** ([gkikas@ics.forth.gr](mailto:gkikas@ics.forth.gr)).
+Email **Stefanos Gkikas** ([gkikas@ics.forth.gr](mailto:gkikas@ics.forth.gr)).
