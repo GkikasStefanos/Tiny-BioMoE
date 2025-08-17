@@ -2,7 +2,7 @@
 
 a Lightweight Embedding Model for Biosignal Analysis
 
-> **Tiny‑BioMoE v1.0** · **7.34 M parameters** · **3.04 GFLOPs** · **192‑D embeddings** · **PyTorch ≥ 2.0**
+> **Tiny‑BioMoE** · **7.34 M parameters** · **3.04 GFLOPs** · **192‑D embeddings** · **PyTorch ≥ 2.0**
 
 ---
 
