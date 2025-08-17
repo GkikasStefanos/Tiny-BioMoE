@@ -82,7 +82,7 @@ model_state_dict    # MoE backbone weights (SpectFormer‑T‑w + EfficientViT�
 import torch, torch.nn as nn
 from PIL import Image
 from torchvision import transforms
-import architectures.spectformer, architectures.efficientvit
+from architecture import spectformer, efficientvit
 from timm.models import create_model
 
 # ---------------------------------------------------------------
@@ -138,7 +138,7 @@ Add your own classification/regression head and (optionally) un‑freeze the bac
 
 ```python
 import torch, torch.nn as nn
-import architectures.spectformer, architectures.efficientvit
+from architecture import spectformer, efficientvit
 from timm.models import create_model
 
 # ---------------------------------------------------------------
