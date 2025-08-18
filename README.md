@@ -44,7 +44,7 @@ a Lightweight Embedding Model for Biosignal Analysis
 
 ---
 
-## Pre‑trained checkpoint
+## Pre‑trained Weights
 
 Get the weights from the **[GitHub Releases page](https://github.com/GkikasStefanos/Tiny-BioMoE/releases)**.
 
