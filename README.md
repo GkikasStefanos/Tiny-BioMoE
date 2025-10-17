@@ -8,7 +8,7 @@ a Lightweight Embedding Model for Biosignal Analysis
 
 ## Paper
 
-[**Tiny-BioMoE: a Lightweight Embedding Model for Biosignal Analysis**](https://arxiv.org/abs/2507.21875)
+[**Tiny-BioMoE: a Lightweight Embedding Model for Biosignal Analysis**](https://dl.acm.org/doi/full/10.1145/3747327.3764788)
 
 ---
 
