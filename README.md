@@ -169,13 +169,19 @@ optimizer = torch.optim.Adam(head.parameters(), lr=1e‑3)
 ## Citation
 
 ```bibtex
-@misc{tiny_biomoe,
-title={Tiny-BioMoE: a Lightweight Embedding Model for Biosignal Analysis}, 
-author={Stefanos Gkikas and Ioannis Kyprakis and Manolis Tsiknakis},
-year={2025},
-eprint={2507.21875},
-archivePrefix={arXiv},
-primaryClass={cs.AI}
+@inproceedings{tiny_biomoe,
+author = {Gkikas, Stefanos and Kyprakis, Ioannis and Tsiknakis, Manolis},
+title = {Tiny-BioMoE: a Lightweight Embedding Model for Biosignal Analysis},
+year = {2025},
+isbn = {9798400720765},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3747327.3764788},
+doi = {10.1145/3747327.3764788},
+booktitle = {Companion Proceedings of the 27th International Conference on Multimodal Interaction},
+pages = {117–126},
+numpages = {10},
+series = {ICMI '25 Companion}
 }
 ```
 
