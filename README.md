@@ -1,6 +1,6 @@
 # Tiny‑BioMoE
 
-a Lightweight Embedding Model for Biosignal Analysis
+A Lightweight Embedding Model for Biosignal Analysis
 
 > **Tiny‑BioMoE** · **7.34 M parameters** · **3.04 GFLOPs** · **192‑D embeddings** · **PyTorch ≥ 2.0**
 
