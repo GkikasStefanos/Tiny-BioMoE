@@ -67,7 +67,7 @@ curl -L -o Tiny-BioMoE.pth "$auto"
 The checkpoint contains **only one key**:
 
 ```text
-model_state_dict    # MoE backbone weights (SpectFormer‑T‑w + EfficientViT‑w)
+model_state_dict    # MoE backbone weights
 ```
 
 ---
